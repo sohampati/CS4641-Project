@@ -108,10 +108,8 @@ Linear regression remains a useful baseline but cannot capture complex interacti
 
 Future improvements include:
 
-- **Ridge / Lasso Regression**: reduce multicollinearity and stabilize coefficients.
 - **Tree-based models**: Random Forests, Gradient Boosted Trees for nonlinear relationships.
 - **Location-based enrichment**: neighborhood or zipcode features.
-
 ---
 
-## 📁 Project Structure
+
