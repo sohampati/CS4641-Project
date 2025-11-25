@@ -1,115 +1,126 @@
-# Housing Price Prediction with Linear Regression
+# Southern California Housing Market Analysis  
 
-This project analyzes home prices using a Linear Regression model. It covers data preprocessing, feature engineering, encoding, modeling, and performance evaluation using a dataset of 15,474 entries - SoCal Real Estate specifically
 
----
-
-## 📌 1. Data Preprocessing
-
-### **Imputation**
-The dataset did not contain missing values, but the pipeline includes median imputation for any numerical feature that may contain missing entries in future datasets.
-
-### **Outlier Analysis (IQR)**
-The IQR method was used to detect potential price outliers. No entries were removed to preserve full market variation.  
-Some negative lower bounds appeared due to the IQR formula—these do not indicate real negative home values, only that no low-end outliers exist.
+This project analyzes Southern California home prices using exploratory data analysis, feature engineering, and multiple predictive modeling approaches. We evaluate Linear Regression, Ridge Regression, and XGBoost to understand how different algorithms capture the complexity of the market.
 
 ---
 
-## 📌 2. Feature Engineering
+## 📂 1. Data Loading & Initial Exploration
 
-Four new features were added:
+The dataset was imported and examined for structure, types, and summary statistics. Initial EDA focused on:
 
-- **price_per_sqft**: `price / sqft`
-- **sqft_per_room**: `sqft / bedrooms` (bedrooms of 0 were replaced with 1 to avoid division by zero)
-- **total_rooms**: `bedrooms + bathrooms`
-- **bath_to_bed_ratio**: `bathrooms / bedrooms`
+- Distributions of price, bedrooms, bathrooms, and square footage  
+- City-level differences  
+- Correlations among features  
 
-These features capture spatial efficiency and structural density beyond raw room counts.
-
----
-
-## 📌 3. Encoding
-
-City names were converted to integer IDs because linear regression requires numerical input. Each unique city string was mapped to a unique integer.
+Price was heavily right-skewed, and the city variable showed strong categorical variation.
 
 ---
 
-## 📌 4. Modeling Pipeline
+## 📊 2. Exploratory Data Analysis (EDA)
 
-### **Selected Features**
-- `bed`
-- `bath`
-- `sqft`
-- `city_encoded`
-- `sqft_per_room`
-- `total_rooms`
-- `bath_to_bed_ratio`
+We visualized key patterns using histograms, scatterplots, and correlation heatmaps.  
+Major takeaways:
 
-The target variable is **price**.
-
-### **Train/Test Split**
-- **80% training:** 12,379 samples  
-- **20% testing:** 3,095 samples  
-
-A Linear Regression model was trained on the processed training set.
+- Square footage is one of the strongest predictors of price.
+- Cities vary widely in median price.
+- The dataset includes expensive homes that extend well into the long tail.
 
 ---
 
-## 📌 5. Coefficient Interpretation
+## 🧹 3. Data Preprocessing
 
-Key coefficients:
+### 3.1 Missing Values
+No missing values were present, but the preprocessing pipeline includes median imputation for future robustness.
 
-- **Intercept:** $244,842.70
-- **bath:** +104,797.24  
-- **bed:** –74,488.77  
-- **bath_to_bed_ratio:** –265,859.88  
-- **sqft & total_rooms:** positive contributions with smaller magnitudes  
-
-The negative ratio coefficient results from multicollinearity. When controlling for individual bed/bath features, the ratio can indicate fewer bedrooms rather than more bathrooms.
+### 3.2 Outlier Detection (IQR)
+The IQR method flagged potential outliers in price, but none were removed. Keeping them preserves the integrity of real-world market variability.
 
 ---
 
-## 📌 6. Model Performance
+## 🛠️ 4. Feature Engineering
 
-### **Predicted vs Actual**
-Scatter plots show wide dispersion around the ideal line, explaining the moderate R² value.
+We created additional features to better capture spatial and structural characteristics:
 
-### **Residual Behavior**
-- Residuals cluster near zero for low-priced predictions.
-- Error increases substantially for high-priced predictions.
-- Patterns are consistent across train/test splits.
+- **price_per_sqft**  
+- **sqft_per_room** (with division-by-zero protection)  
+- **total_rooms**  
+- **bath_to_bed_ratio**  
 
-### **Residual Distributions**
-Both sets show roughly normal, zero-centered distributions—an indication of unbiased errors.
-
-### **Metrics**
-| Metric | Value | Interpretation |
-|--------|--------|----------------|
-| **RMSE** | $309,313.21 | Avg. error ~43.7% of mean home price |
-| **MAE** | $228,128.65 | Typical absolute error |
-| **R²** | 0.3509 | Explains ~35% of price variance |
-
-These results reflect the limits of a purely linear model on a nonlinear market.
+These engineered features provide information not contained in raw counts.
 
 ---
 
-## 📌 7. Deeper Model Analysis
+## 🔢 5. Encoding
 
-- Square footage is the strongest positive predictor.
-- City encoding captures major regional pricing differences.
-- Multicollinearity complicates interpretation of bed/bath ratio features.
-- Large residuals and moderate R² show that nonlinear relationships dominate the dataset.
-
-Linear regression remains a useful baseline but cannot capture complex interactions in housing markets.
+City names were converted to integer IDs using label encoding, enabling their use in regression models that require numerical inputs.
 
 ---
 
-## 📌 8. Next Steps
+## 🤖 6. Modeling
 
-Future improvements include:
+We trained and evaluated **three** models:
 
-- **Tree-based models**: Random Forests, Gradient Boosted Trees for nonlinear relationships.
-- **Location-based enrichment**: neighborhood or zipcode features.
+### **1. Linear Regression**
+- Baseline model  
+- Simple, interpretable  
+- R² ≈ 0.35  
+- Coefficients show sqft and bathrooms as strong positive predictors  
+- bath_to_bed_ratio had a large negative coefficient due to multicollinearity
+
+### **2. Ridge Regression**
+- Adds L2 regularization to penalize large coefficients  
+- Helped reduce coefficient instability from multicollinearity  
+- Performance was slightly improved over plain Linear Regression  
+- Better generalization, lower variance in predictions
+
+### **3. XGBoost Regressor**
+- Flexible tree-based gradient boosting model  
+- Captures nonlinearities and feature interactions  
+- Significantly improved predictive accuracy  
+- Outperformed both Linear and Ridge models on all metrics  
+- Handles skewed data and heterogeneous feature importance more effectively
+
 ---
 
+## 📈 7. Evaluation
+
+We used an 80/20 train-test split and compared models using:
+
+- **RMSE**
+- **MAE**
+- **R²**
+- **Residual plots**
+- **Predicted vs Actual price plots**
+- **Feature importance charts (for XGBoost)**
+
+### Model Comparison Summary
+- **Linear Regression:** Reasonable baseline, interpretable but limited  
+- **Ridge Regression:** Slight improvement via regularization  
+- **XGBoost:** Clear winner, capturing nonlinear relationships and reducing error significantly  
+
+Residual plots showed:
+
+- Linear and Ridge errors grow substantially for high-priced homes  
+- XGBoost maintains tighter residual spread, especially in the upper price range  
+
+---
+
+## 🧠 8. Conclusions
+
+- The housing market exhibits strong nonlinearity that linear models cannot fully capture.  
+- Ridge Regression improves stability but not enough to overcome structural limits.  
+- XGBoost delivers the best results by modeling complex interactions and city-level effects.  
+- Feature engineering helped all models but benefited XGBoost most.
+
+---
+
+## 🚀 9. Next Steps
+
+Potential future improvements:
+
+- Explore hyperparameter tuning for XGBoost  
+- Incorporate more geographic features (latitude/longitude, neighborhood clustering)  
+- Perform cross-validation beyond a single 80/20 split  
+- Consider LightGBM or CatBoost for further nonlinear modeling  
 
